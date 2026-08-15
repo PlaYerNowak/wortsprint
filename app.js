@@ -2,7 +2,7 @@ const KEY='wortsprint-v1';
 const DAY=86400000;
 const $=s=>document.querySelector(s);
 let state=JSON.parse(localStorage.getItem(KEY)||'{"cards":{},"last":"","streak":0}');
-let session=[],index=0,correct=0,currentResult=false;
+let session=[],newWords=[],learnIndex=0,index=0,correct=0,currentResult=false;
 const norm=s=>s.toLocaleLowerCase('de').trim().replace(/[.,!?]/g,'').replace(/\s+/g,' ');
 function card(w){return state.cards[w.id]||{due:0,interval:0,reps:0,lapses:0}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
@@ -12,7 +12,10 @@ function render(){const topic=$('#topic').value||'Wszystkie';const pool=WORDS.fi
 function init(){const topics=['Wszystkie',...new Set(WORDS.map(w=>w.topic))];$('#topic').innerHTML=topics.map(t=>`<option>${t}</option>`).join('');render();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js')}
 function shuffle(items){for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]]}return items}
 function choose(){const t=$('#topic').value,size=$('#size').value,n=size==='random'?8+Math.floor(Math.random()*5):Number(size),pool=WORDS.filter(w=>t==='Wszystkie'||w.topic===t);const due=shuffle(dueWords(pool));const unseen=shuffle(pool.filter(w=>!state.cards[w.id]));const selected=due.slice(0,n);selected.push(...unseen.slice(0,n-selected.length));return shuffle(selected)}
-function start(){session=choose();index=0;correct=0;if(!session.length)return;$('#home').hidden=true;$('#summary').hidden=true;$('#quiz').hidden=false;show()}
+function start(){session=choose();newWords=session.filter(w=>!state.cards[w.id]);learnIndex=0;index=0;correct=0;if(!session.length)return;$('#home').hidden=true;$('#summary').hidden=true;if(newWords.length){$('#learn').hidden=false;$('#quiz').hidden=true;showLearn()}else{beginQuiz()}}
+function showLearn(){const w=newWords[learnIndex];$('#learnProgress').textContent=`${learnIndex+1} z ${newWords.length} nowych`;$('#learnBar').style.width=`${(learnIndex+1)/newWords.length*100}%`;$('#learnTopic').textContent=w.topic;$('#learnGerman').textContent=w.de;$('#learnPolish').textContent=w.pl;$('#learnExtra').textContent=w.extra?`Liczba mnoga: ${w.extra}`:'Kliknij dalej, a za chwilę spróbujesz wpisać to słowo z pamięci.'}
+function nextLearn(){learnIndex++;if(learnIndex<newWords.length)showLearn();else beginQuiz()}
+function beginQuiz(){$('#learn').hidden=true;$('#quiz').hidden=false;session=shuffle(session);index=0;show()}
 function show(){const w=session[index];$('#progressText').textContent=`${index+1} z ${session.length}`;$('#progressBar').style.width=`${index/session.length*100}%`;$('#cardTopic').textContent=w.topic;$('#prompt').textContent=w.pl;$('#answerForm').hidden=false;$('#feedback').hidden=true;$('#answer').value='';$('#answer').focus()}
 function check(e){e.preventDefault();const w=session[index],given=norm($('#answer').value),wanted=norm(w.de);currentResult=given===wanted;if(currentResult)correct++;$('#verdict').textContent=currentResult?'Dobrze!':'Sprawdź odpowiedź';$('#verdict').style.color=currentResult?'#7be1ad':'#ef9a8d';$('#correctAnswer').textContent=w.de;$('#hint').textContent=w.extra?`Liczba mnoga: ${w.extra}`:'';$('#answerForm').hidden=true;$('#feedback').hidden=false}
 function grade(g){const w=session[index],c=card(w),now=Date.now();if(g===0){c.interval=1;c.reps=0;c.lapses++;c.due=now+10*60000}else if(g===1){c.interval=Math.max(1,Math.round((c.interval||1)*1.7));c.reps++;c.due=now+c.interval*DAY}else{c.interval=c.reps===0?2:c.reps===1?6:Math.max(10,Math.round(c.interval*2.3));c.reps++;c.due=now+c.interval*DAY}state.cards[w.id]=c;updateStreak();save();index++;if(index<session.length)show();else finish()}
