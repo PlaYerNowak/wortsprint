@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#16251f">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
-  <style>.learn-card .translation{display:block;font-size:24px;color:#dce9e1;margin:12px 0}.learn-card small{display:block;color:#9db1a8;min-height:40px;margin:8px 0 34px}.learn-card>button{width:100%;margin-top:20px}</style>
+  <style>.learn-card .translation{display:block;font-size:24px;color:#dce9e1;margin:12px 0}.learn-card small{display:block;color:#9db1a8;min-height:40px;margin:8px 0 34px}.learn-card>button{width:100%;margin-top:20px}.articles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}.articles button{padding:11px;background:#243b32;color:#dce9e1;border:1px solid #416254}.articles button.selected{background:#70dfa6;color:#0b1a13;border-color:#70dfa6}</style>
   <title>WortSprint</title>
 </head>
 <body>
@@ -30,6 +30,9 @@
       <div class="progress"><span id="progressText"></span><i><b id="progressBar"></b></i></div>
       <article class="card">
         <span class="tag" id="cardTopic"></span><p>Przetłumacz na niemiecki</p><h2 id="prompt"></h2>
+        <div class="articles" id="articleChoices" hidden>
+          <button type="button" data-article="der" onclick="selectArticle('der')">der</button><button type="button" data-article="die" onclick="selectArticle('die')">die</button><button type="button" data-article="das" onclick="selectArticle('das')">das</button>
+        </div>
         <form id="answerForm"><input id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Wpisz odpowiedź…"><button>Sprawdź</button></form>
         <div id="feedback" hidden><p id="verdict"></p><strong id="correctAnswer"></strong><small id="hint"></small><div class="ratings"><button data-grade="0">Nie pamiętam</button><button data-grade="1">Prawie</button><button data-grade="2">Wiedziałem</button></div></div>
       </article>
