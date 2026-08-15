@@ -1,0 +1,18 @@
+const KEY='wortsprint-v1';
+const DAY=86400000;
+const $=s=>document.querySelector(s);
+let state=JSON.parse(localStorage.getItem(KEY)||'{"cards":{},"last":"","streak":0}');
+let session=[],index=0,correct=0,currentResult=false;
+const norm=s=>s.toLocaleLowerCase('de').trim().replace(/[.,!?]/g,'').replace(/\s+/g,' ');
+function card(w){return state.cards[w.id]||{due:0,interval:0,reps:0,lapses:0}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function updateStreak(){const today=new Date().toISOString().slice(0,10);if(state.last===today)return;const yesterday=new Date(Date.now()-DAY).toISOString().slice(0,10);state.streak=state.last===yesterday?(state.streak||0)+1:1;state.last=today;save()}
+function render(){const topic=$('#topic').value||'Wszystkie';const pool=WORDS.filter(w=>topic==='Wszystkie'||w.topic===topic);const now=Date.now();$('#dueCount').textContent=pool.filter(w=>card(w).due<=now).length;$('#total').textContent=WORDS.length;$('#known').textContent=WORDS.filter(w=>card(w).interval>=14).length;$('#learning').textContent=Object.keys(state.cards).length-Number($('#known').textContent);$('#streak').textContent=`${state.streak||0} dni 🔥`}
+function init(){const topics=['Wszystkie',...new Set(WORDS.map(w=>w.topic))];$('#topic').innerHTML=topics.map(t=>`<option>${t}</option>`).join('');render();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js')}
+function choose(){const t=$('#topic').value,n=Number($('#size').value),now=Date.now(),pool=WORDS.filter(w=>t==='Wszystkie'||w.topic===t);const due=pool.filter(w=>card(w).due<=now).sort((a,b)=>card(a).due-card(b).due);const future=pool.filter(w=>card(w).due>now).sort(()=>Math.random()-.5);return [...due,...future].slice(0,n)}
+function start(){session=choose();index=0;correct=0;if(!session.length)return;$('#home').hidden=true;$('#summary').hidden=true;$('#quiz').hidden=false;show()}
+function show(){const w=session[index];$('#progressText').textContent=`${index+1} z ${session.length}`;$('#progressBar').style.width=`${index/session.length*100}%`;$('#cardTopic').textContent=w.topic;$('#prompt').textContent=w.pl;$('#answerForm').hidden=false;$('#feedback').hidden=true;$('#answer').value='';$('#answer').focus()}
+function check(e){e.preventDefault();const w=session[index],given=norm($('#answer').value),wanted=norm(w.de);currentResult=given===wanted;if(currentResult)correct++;$('#verdict').textContent=currentResult?'Dobrze!':'Sprawdź odpowiedź';$('#verdict').style.color=currentResult?'#7be1ad':'#ef9a8d';$('#correctAnswer').textContent=w.de;$('#hint').textContent=w.extra?`Liczba mnoga: ${w.extra}`:'';$('#answerForm').hidden=true;$('#feedback').hidden=false}
+function grade(g){const w=session[index],c=card(w),now=Date.now();if(g===0){c.interval=1;c.reps=0;c.lapses++;c.due=now+10*60000}else if(g===1){c.interval=Math.max(1,Math.round((c.interval||1)*1.7));c.reps++;c.due=now+c.interval*DAY}else{c.interval=c.reps===0?2:c.reps===1?6:Math.max(10,Math.round(c.interval*2.3));c.reps++;c.due=now+c.interval*DAY}state.cards[w.id]=c;updateStreak();save();index++;if(index<session.length)show();else finish()}
+function finish(){$('#quiz').hidden=true;$('#summary').hidden=false;$('#score').textContent=`${correct}/${session.length}`;render()}
+$('#start').onclick=start;$('#answerForm').onsubmit=check;document.querySelectorAll('[data-grade]').forEach(b=>b.onclick=()=>grade(Number(b.dataset.grade)));$('#quit').onclick=()=>{if(confirm('Zakończyć bieżącą sesję?')){finish()}};$('#again').onclick=()=>{$('#summary').hidden=true;$('#home').hidden=false;render()};$('#topic').onchange=render;$('#reset').onclick=()=>{if(confirm('Usunąć wszystkie zapisane postępy?')){localStorage.removeItem(KEY);state={cards:{},last:'',streak:0};render()}};init();
