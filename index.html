@@ -33,6 +33,9 @@
         <div class="articles" id="articleChoices" hidden>
           <button type="button" data-article="der" onclick="selectArticle('der')">der</button><button type="button" data-article="die" onclick="selectArticle('die')">die</button><button type="button" data-article="das" onclick="selectArticle('das')">das</button>
         </div>
+        <div class="articles" id="caseChoices" hidden>
+          <button type="button" data-case="akk" onclick="selectCase('akk')">+ Akk.</button><button type="button" data-case="dat" onclick="selectCase('dat')">+ Dat.</button><button type="button" data-case="none" onclick="selectCase('none')">brak</button>
+        </div>
         <form id="answerForm"><input id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Wpisz odpowiedź…"><button>Sprawdź</button></form>
         <div id="feedback" hidden><p id="verdict"></p><strong id="correctAnswer"></strong><small id="hint"></small><div class="ratings"><button data-grade="0">Nie pamiętam</button><button data-grade="1">Prawie</button><button data-grade="2">Wiedziałem</button></div></div>
       </article>
