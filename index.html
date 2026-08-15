@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#16251f">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
+  <style>.learn-card .translation{display:block;font-size:24px;color:#dce9e1;margin:12px 0}.learn-card small{display:block;color:#9db1a8;min-height:40px;margin:8px 0 34px}.learn-card>button{width:100%;margin-top:20px}</style>
   <title>WortSprint</title>
 </head>
 <body>
@@ -16,6 +17,14 @@
       <div class="panel"><label for="topic">Temat</label><select id="topic"></select><label for="size">Długość rundy</label><select id="size"><option value="random" selected>Niespodzianka (8–12)</option><option>8</option><option>10</option><option>12</option></select></div>
       <div class="stats"><div><strong id="known">0</strong><span>opanowane</span></div><div><strong id="learning">0</strong><span>w nauce</span></div><div><strong id="total">0</strong><span>wszystkie</span></div></div>
       <button class="ghost" id="reset">Wyzeruj postępy</button>
+    </section>
+    <section id="learn" hidden>
+      <div class="progress"><span id="learnProgress"></span><i><b id="learnBar"></b></i></div>
+      <article class="card learn-card">
+        <span class="tag" id="learnTopic"></span><p>Nowe słowo</p><h2 id="learnGerman"></h2>
+        <strong class="translation" id="learnPolish"></strong><small id="learnExtra"></small>
+        <button id="learnNext" onclick="nextLearn()">Zapamiętaj i dalej</button>
+      </article>
     </section>
     <section id="quiz" hidden>
       <div class="progress"><span id="progressText"></span><i><b id="progressBar"></b></i></div>
